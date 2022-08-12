@@ -14,3 +14,4 @@ flowchart LR
     input -->box[a   box ]
     box -->output
 ```
+</details>
