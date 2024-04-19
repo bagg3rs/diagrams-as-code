@@ -34,9 +34,11 @@ jobs:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             const branchName = `${{steps.create-branch.outputs.result}}`;
+            const url = `https://github.dev/${context.repo.owner}/${context.repo.repo}/tree/${branchName}`;
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `A new branch has been created: ${branchName}`
+              body: `A new branch has been created: [${branchName}](${url})`
             });
+          
