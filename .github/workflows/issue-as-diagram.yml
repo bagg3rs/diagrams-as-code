@@ -1,0 +1,42 @@
+name: Issue as Diagram
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  create-branch-and-comment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Create new branch
+        id: create-branch
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const issueTitle = context.payload.issue.title;
+            const branchName = issueTitle.replace(/\s+/g, '-').toLowerCase();
+            await github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/heads/${branchName}`,
+              sha: context.sha
+            });
+            return branchName;
+
+      - name: Comment on issue
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const branchName = `${{steps.create-branch.outputs.result}}`;
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `A new branch has been created: ${branchName}`
+            });

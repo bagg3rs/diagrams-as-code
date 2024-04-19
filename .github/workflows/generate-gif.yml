@@ -1,0 +1,37 @@
+name: Create Animated GIF
+
+on: push
+
+jobs:
+  create-gif:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install ImageMagick
+        run: sudo apt-get install imagemagick
+
+      - name: Create GIF from images
+        run: convert -delay 100 -loop 0 *.png animated.gif
+
+      - name: Commit and push changes
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+            const path = 'animated.gif';
+            const message = 'Add animated GIF';
+            const content = fs.readFileSync(path, 'base64');
+
+            await github.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: path,
+              message: message,
+              content: content,
+              branch: context.ref.replace('refs/heads/', '')
+            });
+            
